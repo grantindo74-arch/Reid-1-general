@@ -1,0 +1,769 @@
+<title>Reid's Build Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a single readable column, like a game HUD over a night-sky radio map.
+   Deliberately one dark look (no light theme) to feel like a game, not a textbook. */
+:root {
+  --ink: #0c1230;       /* page background */
+  --panel: #151d45;     /* raised surfaces */
+  --line: #2b3672;      /* rules, rails, borders */
+  --text: #e9edff;
+  --muted: #a3acd9;
+  --wave: #4fd6ea;      /* radio / signal cyan */
+  --signal: #ffb547;    /* amber highlight, used sparingly */
+  --good: #5fe39a;
+  --bad: #ff7a7a;
+  --font-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--ink);
+  color: var(--text);
+  font: 17px/1.6 var(--font-body);
+  background-image:
+    radial-gradient(circle at 85% -10%, rgba(79,214,234,.14), transparent 45%),
+    radial-gradient(circle at -10% 40%, rgba(255,181,71,.07), transparent 40%);
+  background-attachment: fixed;
+}
+.wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding-block: 28px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 7vw, 3.1rem); font-weight: 700; letter-spacing: .01em; }
+h2 { font-size: clamp(1.45rem, 4.6vw, 1.9rem); font-weight: 700; }
+h3 { font-size: 1.2rem; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--wave); }
+a:focus-visible, button:focus-visible, input:focus-visible, .card-link:focus-visible {
+  outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 4px;
+}
+.eyebrow {
+  font-family: var(--font-mono); font-size: .78rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--wave);
+}
+.muted { color: var(--muted); }
+.mono { font-family: var(--font-mono); }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.view[hidden] { display: none !important; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  font-family: var(--font-mono); font-size: .8rem; color: var(--muted);
+  margin-bottom: 28px;
+}
+.topbar a { color: var(--muted); text-decoration: none; }
+.topbar a:hover { color: var(--text); }
+.bars { display: inline-flex; gap: 3px; align-items: flex-end; height: 14px; vertical-align: -2px; margin-right: 8px; }
+.bars i { width: 4px; background: var(--wave); border-radius: 1px; }
+.bars i:nth-child(1) { height: 30%; } .bars i:nth-child(2) { height: 55%; }
+.bars i:nth-child(3) { height: 80%; } .bars i:nth-child(4) { height: 100%; }
+
+/* ---------- Home ---------- */
+.hero { display: flex; flex-direction: column; gap: 14px; margin-bottom: 36px; }
+.hero p { max-width: 58ch; color: var(--muted); font-size: 1.05rem; }
+.chapters { display: flex; flex-direction: column; gap: 14px; }
+.card-link {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center;
+  padding: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  color: var(--text); text-decoration: none; transition: border-color .15s, transform .15s;
+}
+.card-link:hover { border-color: var(--wave); transform: translateY(-2px); }
+.card-link > div { min-width: 0; }
+.ch-num {
+  font-family: var(--font-display); font-weight: 700; font-size: 2.2rem; color: var(--wave);
+  width: 2.4ch; text-align: center;
+}
+.card-link .go { font-family: var(--font-mono); color: var(--signal); font-size: .85rem; white-space: nowrap; }
+.progress-pill {
+  display: inline-block; margin-top: 8px; font-family: var(--font-mono); font-size: .75rem;
+  padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted);
+}
+.progress-pill.done { border-color: var(--good); color: var(--good); }
+.later { margin-top: 34px; }
+.later h3 { font-size: 1rem; color: var(--muted); font-family: var(--font-mono); font-weight: 500; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+.later ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.later li {
+  display: flex; gap: 14px; align-items: baseline; padding: 12px 16px;
+  border: 1px dashed var(--line); border-radius: 10px; color: var(--muted);
+}
+.later li b { color: var(--text); font-weight: 700; }
+.later .tag { font-family: var(--font-mono); font-size: .72rem; color: var(--muted); white-space: nowrap; }
+
+/* ---------- Chapter header ---------- */
+.ch-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.ch-head p { color: var(--muted); max-width: 60ch; }
+.lesson-nav { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 40px; }
+.lesson-nav a {
+  font-family: var(--font-mono); font-size: .82rem; text-decoration: none; color: var(--text);
+  padding: 7px 14px; border: 1px solid var(--line); border-radius: 99px; background: var(--panel);
+}
+.lesson-nav a:hover { border-color: var(--wave); }
+.lesson-title { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 26px; }
+
+/* ---------- Journey (the infographic) ---------- */
+.journey { position: relative; display: flex; flex-direction: column; gap: 26px; padding-left: 58px; }
+.journey::before {
+  content: ""; position: absolute; left: 21px; top: 22px; bottom: 22px; width: 2px;
+  background: repeating-linear-gradient(to bottom, var(--wave) 0 8px, transparent 8px 14px);
+  opacity: .55;
+}
+.packet {
+  position: absolute; left: 15px; top: 16px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--signal); box-shadow: 0 0 0 4px rgba(255,181,71,.2), 0 0 18px var(--signal);
+  animation: travel 9s cubic-bezier(.6,0,.4,1) infinite;
+}
+@keyframes travel { 0% { top: 16px; } 92%, 100% { top: calc(100% - 30px); } }
+@media (prefers-reduced-motion: reduce) { .packet { animation: none; } }
+.stop { position: relative; display: flex; flex-direction: column; gap: 10px; }
+.stop-icon {
+  position: absolute; left: -58px; top: 0; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--ink); border: 2px solid var(--wave); color: var(--wave);
+  display: grid; place-items: center;
+}
+.stop-icon svg { width: 22px; height: 22px; }
+.stop-kicker { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); }
+.stop p { max-width: 62ch; }
+.stop .visual {
+  margin-top: 6px; padding: 16px; border: 1px solid var(--line); border-radius: 12px;
+  background: rgba(21,29,69,.7); min-width: 0;
+}
+
+/* band range bars */
+.bands { display: flex; flex-direction: column; gap: 12px; }
+.band-row { display: grid; grid-template-columns: 8.5rem 1fr; gap: 12px; align-items: center; }
+.band-row .lbl { font-size: .85rem; line-height: 1.3; }
+.band-row .lbl small { display: block; color: var(--muted); font-family: var(--font-mono); font-size: .72rem; }
+.range { height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--wave), rgba(79,214,234,.15)); }
+.band-legend { display: flex; justify-content: space-between; gap: 10px; font-size: .78rem; color: var(--muted); margin-top: 4px; font-family: var(--font-mono); }
+
+/* hex cell map */
+.hexmap svg { width: 100%; max-width: 440px; height: auto; display: block; margin: 0 auto; }
+.hexmap figcaption { font-size: .85rem; color: var(--muted); text-align: center; margin-top: 6px; }
+
+/* core checklist */
+.core-jobs { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.core-jobs div { padding: 10px 12px; border-left: 3px solid var(--wave); background: rgba(79,214,234,.06); border-radius: 0 8px 8px 0; font-size: .92rem; }
+.core-jobs b { display: block; font-family: var(--font-display); }
+
+/* ---------- Side panels ---------- */
+.section { margin-top: 54px; display: flex; flex-direction: column; gap: 18px; }
+.timeline { display: flex; flex-direction: column; gap: 0; border-left: 2px solid var(--line); margin-left: 6px; }
+.gen { display: grid; grid-template-columns: 4.2rem 1fr; gap: 14px; padding: 10px 0 10px 18px; position: relative; }
+.gen::before { content: ""; position: absolute; left: -7px; top: 18px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); border: 2px solid var(--wave); }
+.gen:last-child::before { background: var(--wave); }
+.gen .g { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: var(--wave); line-height: 1.1; }
+.gen .yr { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); }
+.gen > div { min-width: 0; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.fact { padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; gap: 6px; }
+.fact b { font-family: var(--font-display); font-size: 1.05rem; color: var(--signal); }
+
+.math { padding: 20px; border: 1px solid var(--wave); border-radius: 14px; display: flex; flex-direction: column; gap: 12px; background: rgba(79,214,234,.05); }
+.formula { font-family: var(--font-mono); font-size: 1.05rem; color: var(--wave); }
+.calc { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+input[type="number"], input[type="text"] {
+  font: 500 1rem var(--font-mono); color: var(--text); background: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 8.5rem; max-width: 100%;
+}
+input:focus { border-color: var(--wave); outline: none; }
+.result { font-family: var(--font-mono); color: var(--signal); }
+
+/* ---------- Missions ---------- */
+.missions { display: flex; flex-direction: column; gap: 18px; }
+.mission { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; }
+.mission.is-done { border-color: var(--good); }
+.mission-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; padding: 18px 18px 0; }
+.mission-head > div { min-width: 0; }
+.mission-meta { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); margin-top: 4px; }
+.mission-body { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+.mission ol { margin: 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: 6px; }
+.why { font-size: .92rem; padding: 10px 12px; border-radius: 8px; background: rgba(255,181,71,.08); color: var(--text); }
+.why b { color: var(--signal); }
+.note { font-size: .88rem; color: var(--muted); }
+.done-toggle {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; flex-shrink: 0;
+  font-family: var(--font-mono); font-size: .8rem; padding: 6px 12px; border-radius: 99px;
+  border: 1px solid var(--line); color: var(--muted); background: var(--ink); user-select: none;
+}
+.done-toggle input { accent-color: var(--good); width: 16px; height: 16px; margin: 0; }
+.mission.is-done .done-toggle { border-color: var(--good); color: var(--good); }
+
+.log { display: grid; grid-template-columns: auto auto; gap: 10px 14px; align-items: center; justify-content: start; }
+.log label { font-size: .9rem; }
+.meter { position: relative; height: 14px; border-radius: 7px; margin: 22px 0 6px;
+  background: linear-gradient(90deg, var(--bad), var(--signal) 50%, var(--good)); }
+.meter .needle { position: absolute; top: -8px; width: 4px; height: 30px; background: var(--text); border-radius: 2px; transform: translateX(-2px); transition: left .3s; }
+.meter-scale { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: .72rem; color: var(--muted); }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--font-mono); font-weight: 500; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+td input[type="text"] { width: 10rem; }
+td input[type="number"] { width: 6.5rem; }
+td.rank { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; }
+.radio-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.radio-row label { display: inline-flex; gap: 6px; align-items: center; }
+
+.score {
+  margin-top: 30px; padding: 18px 20px; border-radius: 14px; border: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.score .big { font-family: var(--font-display); font-size: 2rem; color: var(--wave); }
+.footer-note { margin-top: 40px; font-size: .85rem; color: var(--muted); }
+
+@media (max-width: 520px) {
+  body { font-size: 16px; }
+  .journey { padding-left: 50px; }
+  .stop-icon { left: -50px; width: 38px; height: 38px; }
+  .journey::before { left: 18px; }
+  .packet { left: 12px; }
+  .band-row { grid-template-columns: 1fr; gap: 4px; }
+  .core-jobs { grid-template-columns: 1fr; }
+  .card-link { grid-template-columns: auto 1fr; }
+  .card-link .go { grid-column: 2; }
+  .mission-head { flex-direction: column; }
+}
+</style>
+
+<div class="wrap">
+
+  <!-- ===================== HOME ===================== -->
+  <section class="view" id="view-home">
+    <div class="topbar">
+      <span><span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>BUILD LAB</span>
+      <span>Reid + Dad</span>
+    </div>
+
+    <header class="hero">
+      <span class="eyebrow">Course home</span>
+      <h1>Reid's Build Lab</h1>
+      <p>How the tech around you actually works, and how to build your own. Each chapter has a short lesson and hands-on missions. Pick up wherever you left off.</p>
+    </header>
+
+    <div class="chapters">
+      <a class="card-link" href="#cell-networks">
+        <span class="ch-num">01</span>
+        <div>
+          <h3>How Cell Networks Work</h3>
+          <p class="muted">Follow a text from your phone to a friend's, then test the network yourself with 5 phone missions.</p>
+          <span class="progress-pill" id="home-progress">0 of 5 missions</span>
+        </div>
+        <span class="go">Start &rarr;</span>
+      </a>
+    </div>
+
+    <div class="later">
+      <h3>Ideas for later chapters</h3>
+      <ul>
+        <li><b>Build a multiplayer game</b><span class="tag">idea</span></li>
+        <li><b>Run your own server in the cloud</b><span class="tag">idea</span></li>
+        <li><b>How a website gets found (DNS)</b><span class="tag">idea</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 1 ===================== -->
+  <section class="view" id="view-cell-networks" hidden>
+    <div class="topbar">
+      <a href="#home">&larr; Course home</a>
+      <span>Chapter 01</span>
+    </div>
+
+    <header class="ch-head">
+      <span class="eyebrow">Chapter 01 · Networks</span>
+      <h1>How Cell Networks Work</h1>
+      <p>You send a text and it shows up on your friend's phone almost instantly. Here's every stop it makes on the way.</p>
+    </header>
+    <nav class="lesson-nav" aria-label="Lessons in this chapter">
+      <a href="#cell-networks" data-jump="lesson-1">1.1 The journey</a>
+      <a href="#cell-networks" data-jump="lesson-2">1.2 Phone missions</a>
+    </nav>
+
+    <!-- Lesson 1.1 -->
+    <div id="lesson-1">
+      <div class="lesson-title">
+        <span class="eyebrow">Lesson 1.1</span>
+        <h2>The journey of a text</h2>
+      </div>
+
+      <div class="journey">
+        <span class="packet" aria-hidden="true"></span>
+
+        <div class="stop">
+          <span class="stop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>
+          </span>
+          <span class="stop-kicker">Stop 1 · Your phone</span>
+          <h3>A radio in your pocket</h3>
+          <p>Your phone turns your message into radio waves and sends it out. Your <b>SIM card</b> is your ID: it holds a secret key that proves to the network you're a real customer and is used to encrypt everything you send.</p>
+        </div>
+
+        <div class="stop">
+          <span class="stop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>
+          </span>
+          <span class="stop-kicker">Stop 2 · Radio waves</span>
+          <h3>Far and slow, or short and fast</h3>
+          <p>Carriers send data on different frequency <b>bands</b>. Low frequencies travel far and go through walls but carry less data. High frequencies carry tons of data but only go a short distance, and walls, trees, even your hand can block them.</p>
+          <div class="visual">
+            <div class="bands">
+              <div class="band-row">
+                <span class="lbl">Low-band<small>600–900 MHz</small></span>
+                <span class="range" style="width:100%"></span>
+              </div>
+              <div class="band-row">
+                <span class="lbl">Mid-band<small>1.7–3.8 GHz</small></span>
+                <span class="range" style="width:48%"></span>
+              </div>
+              <div class="band-row">
+                <span class="lbl">mmWave 5G<small>24–39 GHz</small></span>
+                <span class="range" style="width:10%"></span>
+              </div>
+            </div>
+            <div class="band-legend"><span>Bar length = how far it reaches</span><span>Shorter = faster</span></div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="stop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v13M8 22l4-13 4 13"/><path d="M8.5 5.5a5 5 0 0 0 0 7M15.5 5.5a5 5 0 0 1 0 7"/><circle cx="12" cy="9" r="1.2" fill="currentColor"/></svg>
+          </span>
+          <span class="stop-kicker">Stop 3 · Cell tower</span>
+          <h3>The map is made of cells</h3>
+          <p>Each tower covers an area called a <b>cell</b>, which is where "cellular" comes from. Neighboring cells avoid interfering with each other, so the same frequencies can be reused across a whole city. When you move, your phone keeps measuring nearby towers and the network <b>hands you off</b> to a stronger one without dropping your call.</p>
+          <figure class="visual hexmap" style="margin:6px 0 0">
+            <svg id="hex-svg" viewBox="0 0 440 300" role="img" aria-label="Seven hexagon-shaped cells, each with a tower, and a path showing a phone moving from one cell to the next"></svg>
+            <figcaption>The dashed line is you riding in a car. Each time you cross into a new cell, you get handed off.</figcaption>
+          </figure>
+        </div>
+
+        <div class="stop">
+          <span class="stop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7h6l3 5h9M3 17h6l3-5"/></svg>
+          </span>
+          <span class="stop-kicker">Stop 4 · Backhaul</span>
+          <h3>Wireless for only the first stretch</h3>
+          <p>The tower sends your message into <b>fiber-optic cable</b>: pulses of light in glass strands. So the "wireless" part of your text is only the trip to the tower. After that it's wires, all the way to the carrier's data center.</p>
+        </div>
+
+        <div class="stop">
+          <span class="stop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="7" rx="1.5"/><rect x="4" y="14" width="16" height="7" rx="1.5"/><path d="M8 6.5h.01M8 17.5h.01"/></svg>
+          </span>
+          <span class="stop-kicker">Stop 5 · Core network</span>
+          <h3>The carrier's brain</h3>
+          <p>Racks of servers called the <b>core network</b> handle the hard parts. In 5G, the core is mostly software, often running on the same kind of cloud servers as websites and games.</p>
+          <div class="visual core-jobs">
+            <div><b>Who are you?</b>Checks your SIM's secret key</div>
+            <div><b>Where's your friend?</b>Tracks which tower each phone is near</div>
+            <div><b>Send it</b>Routes your message to the right place</div>
+            <div><b>Rules</b>Data limits, billing, roaming</div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <span class="stop-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9.5 11l2 2 3.5-4"/></svg>
+          </span>
+          <span class="stop-kicker">Stop 6 · Friend's phone</span>
+          <h3>Delivered</h3>
+          <p>The core finds the tower nearest your friend, and the whole trip runs backwards: fiber to their tower, radio to their phone. Usually it takes under a second, even across the country.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="eyebrow">Upgrades over time</span>
+        <h2>1G to 5G</h2>
+        <div class="timeline">
+          <div class="gen"><span class="g">1G<br><span class="yr">1980s</span></span><div>Analog voice calls only. Anyone with a radio scanner could listen in.</div></div>
+          <div class="gen"><span class="g">2G<br><span class="yr">1990s</span></span><div>Calls go digital and text messages are born.</div></div>
+          <div class="gen"><span class="g">3G<br><span class="yr">2000s</span></span><div>Real internet on phones. Slow, but it made the first smartphones possible.</div></div>
+          <div class="gen"><span class="g">4G<br><span class="yr">2010s</span></span><div>Everything becomes internet data, even voice calls. Video streaming takes off.</div></div>
+          <div class="gen"><span class="g">5G<br><span class="yr">2020s</span></span><div>Faster and lower delay, connects far more devices, and the core runs as software in the cloud.</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <span class="eyebrow">Did you know?</span>
+        <div class="facts">
+          <div class="fact"><b>Concerts jam the network</b><span>Every phone in a cell shares the same tower. At a packed stadium, carriers roll in extra towers on trucks called COWs: Cells On Wheels.</span></div>
+          <div class="fact"><b>Bars are a rough guess</b><span>Phone makers decide what counts as "4 bars." The real number is signal strength in dBm. You'll measure it yourself in Mission 1.</span></div>
+          <div class="fact"><b>911 works on any network</b><span>In the US, an emergency call goes through on any carrier's tower that can hear your phone, even if your own carrier has no signal there.</span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="math">
+          <span class="eyebrow">Math corner</span>
+          <h3>Why high frequencies are called "millimeter wave"</h3>
+          <p>Radio waves travel at the speed of light. Divide that speed by the frequency and you get the length of one wave:</p>
+          <p class="formula">wavelength = 300,000,000 m/s ÷ frequency (Hz)</p>
+          <div class="calc">
+            <label for="freq-mhz">Frequency in MHz</label>
+            <input type="number" id="freq-mhz" value="600" min="1" step="any" inputmode="decimal">
+            <span class="result" id="wave-out" aria-live="polite"></span>
+          </div>
+          <p class="note">Try 600 (low-band), 2500 (mid-band) and 28000 (mmWave). Longer waves bend around buildings and pass through walls more easily. Tiny ones get blocked.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 1.2 -->
+    <div id="lesson-2" class="section" style="margin-top:70px">
+      <div class="lesson-title" style="margin-bottom:6px">
+        <span class="eyebrow">Lesson 1.2</span>
+        <h2>Phone missions</h2>
+        <p class="muted">Five experiments for your Android phone. Check each one off when you finish. Your answers save on this device.</p>
+      </div>
+
+      <div class="missions">
+
+        <!-- Mission 1 -->
+        <article class="mission" data-mission="m1">
+          <div class="mission-head">
+            <div>
+              <span class="eyebrow">Mission 1</span>
+              <h3>Secret signal meter</h3>
+              <div class="mission-meta">5 min · at home</div>
+            </div>
+            <label class="done-toggle"><input type="checkbox" id="done-m1"> Done</label>
+          </div>
+          <div class="mission-body">
+            <p>Find your phone's real signal strength, measured in <b>dBm</b> instead of bars.</p>
+            <ol>
+              <li>Open <b>Settings → About phone</b>.</li>
+              <li>Tap <b>SIM status</b> (on Samsung: <b>Status information → SIM card status</b>). Menus differ a little by brand.</li>
+              <li>Find <b>Signal strength</b>. It looks like <span class="mono">-95 dBm 45 asu</span>. The dBm number is the one you want.</li>
+            </ol>
+            <p class="note">Can't find it? Install the free app <b>Network Cell Info Lite</b> from the Play Store. It shows dBm live.</p>
+            <div class="log">
+              <label for="m1-dbm">Your reading (dBm)</label>
+              <input type="number" id="m1-dbm" placeholder="-95" max="0" inputmode="numeric">
+            </div>
+            <div class="meter" aria-hidden="true"><span class="needle" id="m1-needle" style="left:50%"></span></div>
+            <div class="meter-scale"><span>-120 very weak</span><span>-100</span><span>-80 excellent</span></div>
+            <p class="result" id="m1-verdict" aria-live="polite">Enter a reading to see how it rates.</p>
+            <p class="why"><b>Why it's negative:</b> dBm measures power compared to 1 milliwatt, and your phone receives way less than that. Every 10 dBm closer to zero means <b>10× more power</b>. So -70 dBm is 1,000× stronger than -100.</p>
+          </div>
+        </article>
+
+        <!-- Mission 2 -->
+        <article class="mission" data-mission="m2">
+          <div class="mission-head">
+            <div>
+              <span class="eyebrow">Mission 2</span>
+              <h3>Tower hunt</h3>
+              <div class="mission-meta">30 min · go outside</div>
+            </div>
+            <label class="done-toggle"><input type="checkbox" id="done-m2"> Done</label>
+          </div>
+          <div class="mission-body">
+            <p>Find the cell tower your phone is probably using, then go see it in real life.</p>
+            <ol>
+              <li>Go to <a href="https://www.cellmapper.net/map" target="_blank" rel="noopener">cellmapper.net/map</a>. Pick your carrier from the menu.</li>
+              <li>Find the towers closest to your house. Which one is nearest?</li>
+              <li>Go find it. Many towers are disguised as trees, flagpoles or church steeples, or hidden on rooftops.</li>
+            </ol>
+            <p class="note">Stay on public sidewalks and don't go past fences. Looking is fine, climbing is not.</p>
+            <div class="log">
+              <label for="m2-dist">Distance from home (miles)</label>
+              <input type="number" id="m2-dist" placeholder="0.8" step="any" min="0" inputmode="decimal">
+              <label for="m2-look">What did it look like?</label>
+              <input type="text" id="m2-look" placeholder="Fake pine tree">
+            </div>
+            <p class="why"><b>What you learn:</b> towers are everywhere once you know how to spot them, and carriers place them carefully to cover every neighborhood.</p>
+          </div>
+        </article>
+
+        <!-- Mission 3 -->
+        <article class="mission" data-mission="m3">
+          <div class="mission-head">
+            <div>
+              <span class="eyebrow">Mission 3</span>
+              <h3>Signal map of the house</h3>
+              <div class="mission-meta">15 min · at home</div>
+            </div>
+            <label class="done-toggle"><input type="checkbox" id="done-m3"> Done</label>
+          </div>
+          <div class="mission-body">
+            <p>Use the signal reading from Mission 1 in five different spots. Stand still for 10 seconds before writing each number down.</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Spot</th><th>dBm</th><th>Rank</th></tr></thead>
+                <tbody id="room-rows"></tbody>
+              </table>
+            </div>
+            <p class="why"><b>Your prediction:</b> which spot will be worst? Guess before you measure. Walls, floors, metal appliances and distance from the tower all weaken radio waves.</p>
+          </div>
+        </article>
+
+        <!-- Mission 4 -->
+        <article class="mission" data-mission="m4">
+          <div class="mission-head">
+            <div>
+              <span class="eyebrow">Mission 4</span>
+              <h3>Speed test showdown</h3>
+              <div class="mission-meta">10 min · at home</div>
+            </div>
+            <label class="done-toggle"><input type="checkbox" id="done-m4"> Done</label>
+          </div>
+          <div class="mission-body">
+            <p>Compare cell data and Wi-Fi using <a href="https://www.speedtest.net" target="_blank" rel="noopener">speedtest.net</a> or the Speedtest app.</p>
+            <ol>
+              <li>Connected to home Wi-Fi: run a test.</li>
+              <li>Turn Wi-Fi off so you're on cell data: run it again.</li>
+            </ol>
+            <p class="note">A speed test on cell data can use a few hundred MB. Check with Dad about your data plan first.</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th></th><th>Download (Mbps)</th><th>Ping (ms)</th></tr></thead>
+                <tbody>
+                  <tr><td>Wi-Fi</td><td><input type="number" id="m4-wifi-down" min="0" step="any" inputmode="decimal" aria-label="Wi-Fi download in Mbps"></td><td><input type="number" id="m4-wifi-ping" min="0" step="any" inputmode="decimal" aria-label="Wi-Fi ping in milliseconds"></td></tr>
+                  <tr><td>Cell</td><td><input type="number" id="m4-cell-down" min="0" step="any" inputmode="decimal" aria-label="Cell download in Mbps"></td><td><input type="number" id="m4-cell-ping" min="0" step="any" inputmode="decimal" aria-label="Cell ping in milliseconds"></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="result" id="m4-verdict" aria-live="polite"></p>
+            <p class="why"><b>Two different things:</b> download speed is how much data per second. Ping is how long a tiny message takes to go there and back. For online games, low ping matters more than raw speed.</p>
+          </div>
+        </article>
+
+        <!-- Mission 5 -->
+        <article class="mission" data-mission="m5">
+          <div class="mission-head">
+            <div>
+              <span class="eyebrow">Mission 5</span>
+              <h3>Faraday challenge</h3>
+              <div class="mission-meta">10 min · needs a helper</div>
+            </div>
+            <label class="done-toggle"><input type="checkbox" id="done-m5"> Done</label>
+          </div>
+          <div class="mission-body">
+            <p>Can you block radio waves completely?</p>
+            <ol>
+              <li>Wrap your phone in 3 layers of aluminum foil with no gaps.</li>
+              <li>Have someone call it. Does it ring, or go straight to voicemail?</li>
+              <li>Next, try a metal cookie tin or a pot with its lid on.</li>
+            </ol>
+            <p class="note">Don't use a microwave oven for this, even switched off. Foil and pots work fine.</p>
+            <div class="stack">
+              <span>Foil result:</span>
+              <div class="radio-row">
+                <label><input type="radio" name="m5-foil" id="m5-foil-rang" value="rang"> It rang</label>
+                <label><input type="radio" name="m5-foil" id="m5-foil-blocked" value="blocked"> Voicemail (blocked!)</label>
+              </div>
+              <span>Tin or pot result:</span>
+              <div class="radio-row">
+                <label><input type="radio" name="m5-tin" id="m5-tin-rang" value="rang"> It rang</label>
+                <label><input type="radio" name="m5-tin" id="m5-tin-blocked" value="blocked"> Voicemail (blocked!)</label>
+              </div>
+            </div>
+            <p class="why"><b>What's happening:</b> metal soaks up and reflects radio waves. A fully closed metal box is called a Faraday cage. It's why your signal dies in elevators. Even a tiny gap can let some signal leak through.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="score">
+        <div>
+          <span class="eyebrow">Chapter progress</span>
+          <div class="big" id="score-num">0 / 5</div>
+        </div>
+        <p class="muted" id="score-msg" style="max-width:36ch">Finish all five missions to complete Chapter 01.</p>
+      </div>
+
+      <p class="footer-note">Next up: more lessons will be added to this chapter, and new chapters will show up on the course home page.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var STORE_KEY = "buildlab-v1";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { state = {}; }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+
+  /* ---------- Routing ---------- */
+  var views = { "home": "view-home", "cell-networks": "view-cell-networks" };
+  function route() {
+    var name = location.hash.replace("#", "");
+    if (!views[name]) name = "home";
+    Object.keys(views).forEach(function (k) {
+      document.getElementById(views[k]).hidden = (k !== name);
+    });
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", route);
+  route();
+
+  document.querySelectorAll("[data-jump]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById(a.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
+  /* ---------- Hex cell map ---------- */
+  (function drawHexes() {
+    var svg = document.getElementById("hex-svg");
+    var ns = "http://www.w3.org/2000/svg";
+    var r = 56, w = Math.sqrt(3) * r;
+    var cx = 220, cy = 150;
+    var centers = [[0, 0], [w, 0], [-w, 0], [w / 2, 1.5 * r], [-w / 2, 1.5 * r], [w / 2, -1.5 * r], [-w / 2, -1.5 * r]];
+    function el(tag, attrs) {
+      var n = document.createElementNS(ns, tag);
+      for (var k in attrs) n.setAttribute(k, attrs[k]);
+      svg.appendChild(n);
+      return n;
+    }
+    centers.forEach(function (c, i) {
+      var pts = [];
+      for (var j = 0; j < 6; j++) {
+        var a = Math.PI / 180 * (60 * j - 30);
+        pts.push((cx + c[0] + r * Math.cos(a)).toFixed(1) + "," + (cy + c[1] + r * Math.sin(a)).toFixed(1));
+      }
+      el("polygon", { points: pts.join(" "), fill: i === 0 ? "rgba(79,214,234,0.16)" : "rgba(79,214,234,0.05)", stroke: "#4fd6ea", "stroke-opacity": "0.55", "stroke-width": "1.5" });
+      el("circle", { cx: cx + c[0], cy: cy + c[1], r: 5, fill: "#4fd6ea" });
+      el("circle", { cx: cx + c[0], cy: cy + c[1], r: 13, fill: "none", stroke: "#4fd6ea", "stroke-opacity": "0.35" });
+    });
+    el("path", { d: "M " + (cx - 1.4 * w) + " " + (cy + 95) + " C " + (cx - w) + " " + (cy + 20) + ", " + (cx - 20) + " " + (cy + 10) + ", " + (cx + 1.3 * w) + " " + (cy - 70), fill: "none", stroke: "#ffb547", "stroke-width": "3", "stroke-dasharray": "7 6", "stroke-linecap": "round" });
+    el("circle", { cx: cx + 1.3 * w, cy: cy - 70, r: 6, fill: "#ffb547" });
+  })();
+
+  /* ---------- Wavelength calculator ---------- */
+  var freq = document.getElementById("freq-mhz");
+  function updateWave() {
+    var mhz = parseFloat(freq.value);
+    var out = document.getElementById("wave-out");
+    if (!(mhz > 0)) { out.textContent = ""; return; }
+    var meters = 3e8 / (mhz * 1e6);
+    out.textContent = "= " + (meters >= 1 ? meters.toFixed(2) + " m" : meters >= 0.01 ? (meters * 100).toFixed(1) + " cm" : (meters * 1000).toFixed(1) + " mm");
+  }
+  freq.addEventListener("input", updateWave);
+  updateWave();
+
+  /* ---------- Generic save/restore for inputs ---------- */
+  function bindInput(id, onChange) {
+    var input = document.getElementById(id);
+    if (!input) return;
+    if (input.type === "checkbox" || input.type === "radio") {
+      if (state[id]) input.checked = true;
+      input.addEventListener("change", function () {
+        if (input.type === "radio") {
+          document.querySelectorAll('input[name="' + input.name + '"]').forEach(function (o) { state[o.id] = o.checked; });
+        } else {
+          state[id] = input.checked;
+        }
+        save(); if (onChange) onChange();
+      });
+    } else {
+      if (state[id] != null) input.value = state[id];
+      input.addEventListener("input", function () { state[id] = input.value; save(); if (onChange) onChange(); });
+    }
+  }
+
+  /* ---------- Mission 1: dBm meter ---------- */
+  function rateDbm(v) {
+    if (v >= -80) return ["Excellent", "var(--good)"];
+    if (v >= -90) return ["Good", "var(--good)"];
+    if (v >= -100) return ["Okay", "var(--signal)"];
+    if (v >= -110) return ["Weak", "var(--bad)"];
+    return ["Very weak", "var(--bad)"];
+  }
+  function updateM1() {
+    var v = parseFloat(document.getElementById("m1-dbm").value);
+    var verdict = document.getElementById("m1-verdict");
+    var needle = document.getElementById("m1-needle");
+    if (isNaN(v)) { verdict.textContent = "Enter a reading to see how it rates."; verdict.style.color = ""; needle.style.left = "50%"; return; }
+    if (v > 0) v = -v; // people often forget the minus sign
+    var pct = Math.max(0, Math.min(100, (v + 120) / 40 * 100));
+    needle.style.left = pct + "%";
+    var r = rateDbm(v);
+    verdict.textContent = v + " dBm: " + r[0] + " (rough guide for 4G/5G)";
+    verdict.style.color = r[1];
+  }
+  bindInput("m1-dbm", updateM1);
+  updateM1();
+
+  /* ---------- Mission 2 ---------- */
+  bindInput("m2-dist"); bindInput("m2-look");
+
+  /* ---------- Mission 3: house map ---------- */
+  var rooms = ["Your bedroom", "Kitchen", "Basement or lowest floor", "Next to a window", "Bathroom"];
+  var tbody = document.getElementById("room-rows");
+  rooms.forEach(function (name, i) {
+    var tr = document.createElement("tr");
+    tr.innerHTML = '<td><input type="text" id="m3-name-' + i + '" aria-label="Spot ' + (i + 1) + ' name"></td>' +
+      '<td><input type="number" id="m3-dbm-' + i + '" max="0" inputmode="numeric" placeholder="-95" aria-label="Spot ' + (i + 1) + ' signal in dBm"></td>' +
+      '<td class="rank" id="m3-rank-' + i + '"></td>';
+    tbody.appendChild(tr);
+    document.getElementById("m3-name-" + i).value = name;
+  });
+  function updateM3() {
+    var vals = rooms.map(function (_, i) {
+      var v = parseFloat(document.getElementById("m3-dbm-" + i).value);
+      if (v > 0) v = -v;
+      return isNaN(v) ? null : v;
+    });
+    var filled = vals.filter(function (v) { return v !== null; });
+    var max = Math.max.apply(null, filled), min = Math.min.apply(null, filled);
+    vals.forEach(function (v, i) {
+      var cell = document.getElementById("m3-rank-" + i);
+      cell.textContent = ""; cell.style.color = "";
+      if (v === null || filled.length < 2) return;
+      if (v === max) { cell.textContent = "★ Best"; cell.style.color = "var(--good)"; }
+      else if (v === min) { cell.textContent = "Worst"; cell.style.color = "var(--bad)"; }
+    });
+  }
+  rooms.forEach(function (_, i) { bindInput("m3-name-" + i); bindInput("m3-dbm-" + i, updateM3); });
+  updateM3();
+
+  /* ---------- Mission 4: speed ---------- */
+  function updateM4() {
+    var g = function (id) { return parseFloat(document.getElementById(id).value); };
+    var wd = g("m4-wifi-down"), cd = g("m4-cell-down"), wp = g("m4-wifi-ping"), cp = g("m4-cell-ping");
+    var parts = [];
+    if (wd > 0 && cd > 0) parts.push((wd >= cd ? "Wi-Fi" : "Cell") + " downloaded " + (Math.max(wd, cd) / Math.min(wd, cd)).toFixed(1) + "× faster.");
+    if (wp > 0 && cp > 0) parts.push((wp <= cp ? "Wi-Fi" : "Cell") + " had lower ping, so it'd be better for gaming.");
+    document.getElementById("m4-verdict").textContent = parts.join(" ");
+  }
+  ["m4-wifi-down", "m4-wifi-ping", "m4-cell-down", "m4-cell-ping"].forEach(function (id) { bindInput(id, updateM4); });
+  updateM4();
+
+  /* ---------- Mission 5 ---------- */
+  ["m5-foil-rang", "m5-foil-blocked", "m5-tin-rang", "m5-tin-blocked"].forEach(function (id) { bindInput(id); });
+
+  /* ---------- Progress ---------- */
+  var missionIds = ["m1", "m2", "m3", "m4", "m5"];
+  function updateProgress() {
+    var done = 0;
+    missionIds.forEach(function (m) {
+      var on = !!state["done-" + m];
+      if (on) done++;
+      document.querySelector('[data-mission="' + m + '"]').classList.toggle("is-done", on);
+    });
+    document.getElementById("score-num").textContent = done + " / 5";
+    document.getElementById("score-msg").textContent = done === 5
+      ? "Chapter 01 complete. You now know more about cell networks than most adults."
+      : "Finish all five missions to complete Chapter 01.";
+    var pill = document.getElementById("home-progress");
+    pill.textContent = done === 5 ? "Complete ✓" : done + " of 5 missions";
+    pill.classList.toggle("done", done === 5);
+  }
+  missionIds.forEach(function (m) { bindInput("done-" + m, updateProgress); });
+  updateProgress();
+})();
+</script>
