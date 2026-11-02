@@ -181,6 +181,12 @@ input[type="number"], input[type="text"] {
 input:focus { border-color: var(--wave); outline: none; }
 .result { font-family: var(--font-mono); color: var(--signal); }
 
+/* ---------- Infographic ---------- */
+.posters { display: flex; flex-direction: column; gap: 28px; }
+.posters figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.posters img { width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--line); display: block; }
+.posters figcaption { font-family: var(--font-mono); font-size: .8rem; color: var(--muted); }
+
 /* ---------- Missions ---------- */
 .missions { display: flex; flex-direction: column; gap: 18px; }
 .mission { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; }
@@ -258,7 +264,7 @@ td.rank { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; 
         <span class="ch-num">01</span>
         <div>
           <h3>How Cell Networks Work</h3>
-          <p class="muted">Follow a text from your phone to a friend's, then test the network yourself with 5 phone missions.</p>
+          <p class="muted">Follow a text from your phone to a friend's, review it all in a 4-page infographic, then test the network yourself with 5 phone missions.</p>
           <span class="progress-pill" id="home-progress">0 of 5 missions</span>
         </div>
         <span class="go">Start &rarr;</span>
@@ -289,7 +295,8 @@ td.rank { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; 
     </header>
     <nav class="lesson-nav" aria-label="Lessons in this chapter">
       <a href="#cell-networks" data-jump="lesson-1">1.1 The journey</a>
-      <a href="#cell-networks" data-jump="lesson-2">1.2 Phone missions</a>
+      <a href="#cell-networks" data-jump="lesson-poster">1.2 Infographic</a>
+      <a href="#cell-networks" data-jump="lesson-2">1.3 Phone missions</a>
     </nav>
 
     <!-- Lesson 1.1 -->
@@ -422,9 +429,24 @@ td.rank { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; 
     </div>
 
     <!-- Lesson 1.2 -->
-    <div id="lesson-2" class="section" style="margin-top:70px">
+    <div id="lesson-poster" class="section" style="margin-top:70px">
       <div class="lesson-title" style="margin-bottom:6px">
         <span class="eyebrow">Lesson 1.2</span>
+        <h2>The infographic</h2>
+        <p class="muted">The whole journey on four pages. A quick review before the missions. On a phone, pinch to zoom in.</p>
+      </div>
+      <div class="posters">
+        <figure><img src="images/main.png" width="1080" height="1350" alt="Page 1: the six stops a text makes, from your phone, through radio waves, a cell tower, fiber cable and the core network, to your friend's phone."><figcaption>1 · The journey</figcaption></figure>
+        <figure><img src="images/radio.png" width="1080" height="1350" alt="Page 2: low-band, mid-band and mmWave compared by range, and a honeycomb of cells showing handoff as a phone moves."><figcaption>2 · Radio waves and cells</figcaption></figure>
+        <figure><img src="images/core.png" width="1080" height="1350" alt="Page 3: tower to fiber to core to friend, light travels 200,000 km per second in fiber, and the core network's four jobs."><figcaption>3 · Fiber and the core</figcaption></figure>
+        <figure><img src="images/history.png" width="1080" height="1350" alt="Page 4: a timeline from 1G in the 1980s to 5G in the 2020s, plus three did-you-know facts."><figcaption>4 · 1G to 5G</figcaption></figure>
+      </div>
+    </div>
+
+    <!-- Lesson 1.3 -->
+    <div id="lesson-2" class="section" style="margin-top:70px">
+      <div class="lesson-title" style="margin-bottom:6px">
+        <span class="eyebrow">Lesson 1.3</span>
         <h2>Phone missions</h2>
         <p class="muted">Five experiments for your Android phone. Check each one off when you finish. Your answers save on this device.</p>
       </div>
