@@ -269,12 +269,21 @@ td.rank { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; 
         </div>
         <span class="go">Start &rarr;</span>
       </a>
-      <a class="card-link" href="#networks">
+      <a class="card-link" href="#internet">
         <span class="ch-num">02</span>
         <div>
-          <h3>Networks &amp; the Internet</h3>
-          <p class="muted">What really happens when you press Enter, then how real business networks get built and the jobs that run them.</p>
-          <span class="progress-pill">2 lessons</span>
+          <h3>How the Internet Works</h3>
+          <p class="muted">What really happens when you type a website and press Enter, from your house, across the ocean and back.</p>
+          <span class="progress-pill">6-page guide</span>
+        </div>
+        <span class="go">Start &rarr;</span>
+      </a>
+      <a class="card-link" href="#it-world">
+        <span class="ch-num">03</span>
+        <div>
+          <h3>Networks &amp; the IT World</h3>
+          <p class="muted">The parts of a business network, how one gets installed, the main IT jobs, and a quiz.</p>
+          <span class="progress-pill">4-part guide</span>
         </div>
         <span class="go">Start &rarr;</span>
       </a>
@@ -614,33 +623,24 @@ td.rank { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; 
         <p class="muted" id="score-msg" style="max-width:36ch">Finish all five missions to complete Chapter 01.</p>
       </div>
 
-      <p class="footer-note">Next up: <a href="#networks">Chapter 02: Networks &amp; the Internet</a>.</p>
+      <p class="footer-note">Next up: <a href="#internet">Chapter 02: How the Internet Works</a>.</p>
     </div>
   </section>
 
   <!-- ===================== CHAPTER 2 ===================== -->
-  <section class="view" id="view-networks" hidden>
+  <section class="view" id="view-internet" hidden>
     <div class="topbar">
       <a href="#home">&larr; Course home</a>
       <span>Chapter 02</span>
     </div>
 
     <header class="ch-head">
-      <span class="eyebrow">Chapter 02 · Networks</span>
-      <h1>Networks &amp; the Internet</h1>
-      <p>Chapter 01 got your text to the carrier. Now follow data across the whole internet, then see how a real business network gets built and who does the work.</p>
+      <span class="eyebrow">Chapter 02 · The Internet</span>
+      <h1>How the Internet Works</h1>
+      <p>Chapter 01 got your text to the carrier. Now follow your data across the whole internet: what happens when you type youtube.com and press Enter. On a phone, pinch to zoom in.</p>
     </header>
-    <nav class="lesson-nav" aria-label="Lessons in this chapter">
-      <a href="#networks" data-jump="lesson-internet">2.1 How the Internet Works</a>
-      <a href="#networks" data-jump="lesson-it-world">2.2 Networks &amp; the IT World</a>
-    </nav>
 
-    <div id="lesson-internet">
-      <div class="lesson-title" style="margin-bottom:6px">
-        <span class="eyebrow">Lesson 2.1</span>
-        <h2>How the Internet Works</h2>
-        <p class="muted">Six pages: what happens when you type youtube.com and press Enter. On a phone, pinch to zoom in.</p>
-      </div>
+    <div id="lesson-internet" style="margin-top:30px">
       <div class="posters">
         <figure><img src="images/internet-1.png" width="1275" height="1650" loading="lazy" alt="Page 1: the internet is a network of networks. Homes, schools, phone networks, businesses, internet providers and data centers all link together. No one owns it, and every device follows shared rules called protocols."><figcaption>1 · A network of networks</figcaption></figure>
         <figure><img src="images/internet-2.png" width="1275" height="1650" loading="lazy" alt="Page 2: leaving your house. DNS looks up the address, the request is chopped into numbered packets, packets go over Wi-Fi to the router and your internet provider, then hop from router to router. Try it: run tracert google.com."><figcaption>2 · Leaving your house</figcaption></figure>
@@ -651,12 +651,23 @@ td.rank { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; 
       </div>
     </div>
 
-    <div id="lesson-it-world" class="section" style="margin-top:70px">
-      <div class="lesson-title" style="margin-bottom:6px">
-        <span class="eyebrow">Lesson 2.2</span>
-        <h2>Networks &amp; the IT World</h2>
-        <p class="muted">A four-part study guide: the parts of a business network, how one gets installed, the main areas of IT, and a hands-on checklist with a quiz.</p>
-      </div>
+    <p class="footer-note">Next up: <a href="#it-world">Chapter 03: Networks &amp; the IT World</a>.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 3 ===================== -->
+  <section class="view" id="view-it-world" hidden>
+    <div class="topbar">
+      <a href="#home">&larr; Course home</a>
+      <span>Chapter 03</span>
+    </div>
+
+    <header class="ch-head">
+      <span class="eyebrow">Chapter 03 · IT</span>
+      <h1>Networks &amp; the IT World</h1>
+      <p>A four-part study guide: the parts of a business network, how one gets installed, the main areas of IT, and a hands-on checklist with a quiz. On a phone, pinch to zoom in.</p>
+    </header>
+
+    <div id="lesson-it-world" style="margin-top:30px">
       <div class="posters">
         <figure><img src="images/it-world-1.png" width="1275" height="1650" loading="lazy" alt="Part 1: what is a network. The parts of a business network (router, firewall, switch, wireless access point, cabling, servers and cloud, network rack) and how the internet connects through them to every device."><figcaption>Part 1 · What is a network?</figcaption></figure>
         <figure><img src="images/it-world-2.png" width="1275" height="1650" loading="lazy" alt="Part 2: installing a network, a 10-step project in four phases: plan, build, prove it works, and ongoing care by a managed service provider."><figcaption>Part 2 · Installing a network</figcaption></figure>
@@ -677,9 +688,10 @@ td.rank { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; 
   function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
 
   /* ---------- Routing ---------- */
-  var views = { "home": "view-home", "cell-networks": "view-cell-networks", "networks": "view-networks" };
+  var views = { "home": "view-home", "cell-networks": "view-cell-networks", "internet": "view-internet", "it-world": "view-it-world" };
   function route() {
     var name = location.hash.replace("#", "");
+    if (name === "networks") name = "internet"; // old link
     if (!views[name]) name = "home";
     Object.keys(views).forEach(function (k) {
       document.getElementById(views[k]).hidden = (k !== name);
